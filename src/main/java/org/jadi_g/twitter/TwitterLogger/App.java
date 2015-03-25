@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -57,14 +58,19 @@ import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 
 public class App {
-    public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
         Logger logger = LoggerFactory.getLogger("TwitterLogger");
+
+
+        String configFileName = "access.conf";
+		PropertiesConfiguration config = new PropertiesConfiguration(
+				configFileName);
 
 		/**
 		 * Set up your blocking queues: Be sure to size these properly based on
 		 * expected TPS of your stream
 		 */
-        BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
+		BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
 
 		/**
 		 * Declare the host you want to connect to, the endpoint, and
@@ -81,25 +87,23 @@ public class App {
 		hosebirdEndpoint.trackTerms(terms);
 
 		List<String> languages = Lists.newArrayList("fr");
-        hosebirdEndpoint.languages(languages);
-
-        String configFileName = "access.conf";
-        PropertiesConfiguration config = new PropertiesConfiguration(configFileName);
+		hosebirdEndpoint.languages(languages);
 
         // These secrets should be read from a config file
-        String ConsumerKey = config.getString("ConsumerKey");
-        String ConsumerSecret = config.getString("ConsumerSecret");
-        String AccessToken = config.getString("AccessToken");
-        String AccessSecret = config.getString("AccessSecret");
+		String ConsumerKey = config.getString("ConsumerKey");
+		String ConsumerSecret = config.getString("ConsumerSecret");
+		String AccessToken = config.getString("AccessToken");
+		String AccessSecret = config.getString("AccessSecret");
 
-        if (ConsumerKey.isEmpty() || ConsumerSecret.isEmpty() || AccessToken.isEmpty() || AccessSecret.isEmpty()) {
-            logger.error("Need authentification information");
-            return;
-        }
-        logger.info(ConsumerKey);
-        logger.info(ConsumerSecret);
-        logger.info(AccessToken);
-        logger.info(AccessSecret);
+		if (ConsumerKey.isEmpty() || ConsumerSecret.isEmpty()
+				|| AccessToken.isEmpty() || AccessSecret.isEmpty()) {
+			logger.error("Need authentification information");
+			return;
+		}
+		logger.info(ConsumerKey);
+		logger.info(ConsumerSecret);
+		logger.info(AccessToken);
+		logger.info(AccessSecret);
 
 		Authentication hosebirdAuth = new OAuth1(ConsumerKey, ConsumerSecret,
 				AccessToken, AccessSecret);
@@ -113,16 +117,21 @@ public class App {
 
 		Client hosebirdClient = builder.build();
 		// Attempts to establish a connection.
-		hosebirdClient.connect();
+        hosebirdClient.connect();
 
-        while (!hosebirdClient.isDone()) {
+        CircularFifoQueue<String> idQueue = new CircularFifoQueue<String>(config.getInt("idQueueSize", 10));
+
+		while (!hosebirdClient.isDone()) {
 			String msg = msgQueue.take();
 			JSONObject json = new JSONObject(msg);
-			if (json.has("id_str") && json.has("text")) {
-                logger.debug(json.get("id_str")
-						+ "\t"
-						+ json.get("text").toString()
-								.replaceAll("\\r|\\n|\\t", " "));
+            if (json.has("id_str") && json.has("text")) {
+                String id_str = json.getString("id_str");
+
+                if (! idQueue.contains(id_str)) {
+                    idQueue.add(id_str);
+                    logger.debug(id_str + "\t"
+                                 + json.getString("text").replaceAll("\\r|\\n|\\t", " "));
+                }
 			}
 		}
  }
