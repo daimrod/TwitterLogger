@@ -119,7 +119,7 @@ public class App {
 		// Attempts to establish a connection.
         hosebirdClient.connect();
 
-        CircularFifoQueue<String> idQueue = new CircularFifoQueue<String>(config.getInt("idQueueSize", 10));
+        CircularFifoQueue<String> idQueue = new CircularFifoQueue<String>(config.getInt("idQueueSize", 100));
 
 		while (!hosebirdClient.isDone()) {
 			String msg = msgQueue.take();
