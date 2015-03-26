@@ -100,10 +100,6 @@ public class App {
 			logger.error("Need authentification information");
 			return;
 		}
-		logger.info(ConsumerKey);
-		logger.info(ConsumerSecret);
-		logger.info(AccessToken);
-		logger.info(AccessSecret);
 
 		Authentication hosebirdAuth = new OAuth1(ConsumerKey, ConsumerSecret,
 				AccessToken, AccessSecret);
@@ -129,8 +125,8 @@ public class App {
 
                 if (! idQueue.contains(id_str)) {
                     idQueue.add(id_str);
-                    logger.debug(id_str + "\t"
-                                 + json.getString("text").replaceAll("\\r|\\n|\\t", " "));
+                    logger.info(id_str + "\t"
+                                + json.getString("text").replaceAll("\\r|\\n|\\t", " "));
                 }
 			}
 		}
