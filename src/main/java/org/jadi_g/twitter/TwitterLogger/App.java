@@ -116,11 +116,17 @@ public class App {
         hosebirdClient.connect();
 
         CircularFifoQueue<String> idQueue = new CircularFifoQueue<String>(config.getInt("idQueueSize", 100));
+        boolean ignore_retweet = config.getBoolean("ignore_retweet", false);
 
 		while (!hosebirdClient.isDone()) {
 			String msg = msgQueue.take();
-			JSONObject json = new JSONObject(msg);
+            JSONObject json = new JSONObject(msg);
             if (json.has("id_str") && json.has("text")) {
+                // ignore retweet
+                if (ignore_retweet && json.has("retweeted_status")) {
+                    continue;
+                }
+
                 String id_str = json.getString("id_str");
 
                 if (! idQueue.contains(id_str)) {

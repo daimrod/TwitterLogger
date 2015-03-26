@@ -2,3 +2,5 @@ ConsumerKey = ""
 ConsumerSecret = ""
 AccessToken = ""
 AccessSecret = ""
+# idQueueSize = 100
+# ignore_retweet = false
