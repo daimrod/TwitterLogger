@@ -36,7 +36,7 @@
     </encoder>
   </appender> 
 
-  <logger name="TwitterLogger" level="INFO">
+  <logger name="TwitterLogger" level="TRACE">
     <appender-ref ref="FILE"/>
   </logger>
 

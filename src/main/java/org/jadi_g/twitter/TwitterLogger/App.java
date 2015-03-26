@@ -125,8 +125,8 @@ public class App {
 
                 if (! idQueue.contains(id_str)) {
                     idQueue.add(id_str);
-                    logger.info(id_str + "\t"
-                                + json.getString("text").replaceAll("\\r|\\n|\\t", " "));
+                    logger.trace(id_str + "\t"
+                                 + json.getString("text").replaceAll("\\r|\\n|\\t", " "));
                 }
 			}
 		}
